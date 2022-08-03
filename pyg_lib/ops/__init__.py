@@ -16,20 +16,9 @@ class SegmentMatmul(torch.autograd.Function):
     @staticmethod
     def backward(ctx, out_grad):
         inputs, ptr, other = ctx.saved_tensors
-
-        input_grad = None
-        if inputs.requires_grad:
-            input_grad = torch.ops.pyg.cuda_segment_matmul(
-                out_grad, ptr, torch.transpose(other, -2, -1))
-
-        other_grad = None, None
-        if other.requires_grad:
-            sizes = (ptr[1:] - ptr[:-1]).tolist()
-            inputs_t = inputs.transpose(-2, -1).split(sizes, dim=1)
-            outs_grad = out_grad.split(sizes, dim=0)
-            others_grad = torch.ops.pyg.cuda_grouped_matmul(
-                inputs_t, outs_grad)
-            other_grad = torch.stack(others_grad, dim=0)
+        input_grad, other_grad = torch.ops.pyg.segment_matmul_backwards(
+            input_tensor, ptr, other, gradout, input_tensor.requires_grad,
+            other.requires_grad)
 
         return input_grad, None, other_grad
 

@@ -182,12 +182,35 @@ at::Tensor segment_matmul_kernel(const at::Tensor& input,
   return out;
 }
 
+at::Tensor segment_matmul_back_kernel(const at::Tensor& input,
+                                      const at::Tensor& ptr,
+                                      const at::Tensor& other) {
+  auto split_ptr = ptr.index({torch::indexing::Slice(1,-1)});                                    
+  auto split_input =
+      input.contiguous().tensor_split(/*split_size=*/split_ptr, /*dim=*/1);
+  auto split_other =
+      other.contiguous().tensor_split(/*split_size=*/split_ptr, /*dim=*/0);
+  std::vector<at::Tensor> out(split_input.size());
+  for (size_t i = 0; i < split_input.size(); ++i)
+    out[i] =
+        input[i].new_empty({split_input[i].size(0), split_other[i].size(-1)});
+
+  // TODO (matthias) Better handle non-contiguous memory layouts.
+  grouped_matmul_out_kernel(split_input, split_other, out);
+  auto out_stacked = at::stack(out);
+  return out_stacked;
+}
+
 }  // namespace
 
 TORCH_LIBRARY(pyg, m) {
   m.def("pyg::cuda_grouped_matmul(Tensor[] input, Tensor[] other) -> Tensor[]");
   m.def(
       "pyg::cuda_segment_matmul(Tensor input, Tensor ptr, Tensor other) -> "
+      "Tensor");
+  m.def(
+      "pyg::cuda_segment_matmul_back(Tensor input, Tensor ptr, Tensor other) "
+      "-> "
       "Tensor");
 }
 
@@ -196,6 +219,8 @@ TORCH_LIBRARY_IMPL(pyg, CUDA, m) {
          TORCH_FN(grouped_matmul_kernel));
   m.impl(TORCH_SELECTIVE_NAME("pyg::cuda_segment_matmul"),
          TORCH_FN(segment_matmul_kernel));
+  m.impl(TORCH_SELECTIVE_NAME("pyg::pyg::cuda_segment_matmul_back"),
+         TORCH_FN(segment_matmul_back_kernel));
 }
 
 }  // namespace ops
