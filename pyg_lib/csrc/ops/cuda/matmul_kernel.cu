@@ -219,7 +219,7 @@ TORCH_LIBRARY_IMPL(pyg, CUDA, m) {
          TORCH_FN(grouped_matmul_kernel));
   m.impl(TORCH_SELECTIVE_NAME("pyg::cuda_segment_matmul"),
          TORCH_FN(segment_matmul_kernel));
-  m.impl(TORCH_SELECTIVE_NAME("pyg::pyg::cuda_segment_matmul_back"),
+  m.impl(TORCH_SELECTIVE_NAME("pyg::cuda_segment_matmul_back"),
          TORCH_FN(segment_matmul_back_kernel));
 }
 
