@@ -182,8 +182,8 @@ TORCH_LIBRARY_IMPL(pyg, CUDA, m) {
 }
 
 TORCH_LIBRARY_IMPL(pyg, Autograd, m) {
-  m.impl("pyg::grouped_matmul", grouped_matmul_autograd);
-  m.impl("pyg::segment_matmul", segment_matmul_autograd);
+  m.impl("pyg::grouped_matmul", grouped_matmul);
+  m.impl("pyg::segment_matmul", segment_matmul);
 }
 
 }  // namespace ops
