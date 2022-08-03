@@ -16,7 +16,7 @@ class SegmentMatmul(torch.autograd.Function):
     @staticmethod
     def backward(ctx, out_grad):
         inputs, ptr, other = ctx.saved_tensors
-        input_grad, other_grad = torch.ops.pyg.cuda_segment_matmul_backwards(
+        input_grad, other_grad = torch.ops.pyg.segment_matmul_backwards(
             input_tensor, ptr, other, gradout, input_tensor.requires_grad,
             other.requires_grad)
 
