@@ -166,23 +166,24 @@ at::Tensor segment_matmul(const at::Tensor& input,
 }
 
 TORCH_LIBRARY_FRAGMENT(pyg, m) {
-  m.def(TORCH_SELECTIVE_SCHEMA(
+  m.def((
       "pyg::grouped_matmul(Tensor[] input, Tensor[] other) -> Tensor[]"));
   m.def(
-      TORCH_SELECTIVE_SCHEMA("pyg::segment_matmul(Tensor input, Tensor ptr, "
+      ("pyg::segment_matmul(Tensor input, Tensor ptr, "
                              "Tensor other) -> Tensor"));
   m.def(
-      TORCH_SELECTIVE_SCHEMA("pyg::segment_matmul_backwards(Tensor input, Tensor ptr, Tensor other, "
+      ("pyg::segment_matmul_backwards(Tensor input, Tensor ptr, Tensor other, "
       "Tensor grad_out, bool input_req_grad, bool other_req_grad) -> (Tensor, "
       "Tensor)"));
+}
 
 TORCH_LIBRARY_IMPL(pyg, CUDA, m) {
   m.impl("pyg::segment_matmul_backwards", segment_matmul_backwards);
 }
+
 TORCH_LIBRARY_IMPL(pyg, Autograd, m) {
   m.impl("pyg::grouped_matmul", grouped_matmul_autograd);
   m.impl("pyg::segment_matmul", segment_matmul_autograd);
-}
 }
 
 }  // namespace ops
