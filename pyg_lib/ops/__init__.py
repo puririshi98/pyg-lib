@@ -2,7 +2,7 @@ from typing import List
 
 import torch
 from torch import Tensor
-
+import time
 
 class SegmentMatmul(torch.autograd.Function):
     @staticmethod
@@ -16,21 +16,33 @@ class SegmentMatmul(torch.autograd.Function):
     @staticmethod
     def backward(ctx, out_grad):
         inputs, ptr, other = ctx.saved_tensors
+        since=time.time()
 
         input_grad = None
         if inputs.requires_grad:
             input_grad = torch.ops.pyg.cuda_segment_matmul(
                 out_grad, ptr, torch.transpose(other, -2, -1))
-
+         print('time to get input grad:', 1000*(time.time()-since),'ms')
         other_grad = None, None
+        since=time.time()
         if other.requires_grad:
+            list_since=time.time()
             sizes = (ptr[1:] - ptr[:-1]).tolist()
+            print('time to get sizes:', 1000*(time.time()-list_since),'ms')
+            input_since=time.time()
             inputs_t = inputs.transpose(-2, -1).split(sizes, dim=1)
+            print('time to transpose:', 1000*(time.time()-input_since),'ms')
+            out_since =time.time()
             outs_grad = out_grad.split(sizes, dim=0)
+            print('time to split:', 1000*(time.time()-out_since),'ms')
+            other_since = time.time()
             others_grad = torch.ops.pyg.cuda_grouped_matmul(
                 inputs_t, outs_grad)
+            print('time to split:', 1000*(time.time()-other_since),'ms')
+            since_stack=time.time()
             other_grad = torch.stack(others_grad, dim=0)
-
+            print('time to split:', 1000*(time.time()-since_Stack),'ms')
+        print('time to get other grad:', 1000*(time.time()-since),'ms')
         return input_grad, None, other_grad
 
 
