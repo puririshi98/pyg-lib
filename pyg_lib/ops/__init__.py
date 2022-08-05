@@ -41,7 +41,7 @@ class SegmentMatmul(torch.autograd.Function):
             print('time to split:', 1000*(time.time()-other_since),'ms')
             since_stack=time.time()
             other_grad = torch.stack(others_grad, dim=0)
-            print('time to split:', 1000*(time.time()-since_Stack),'ms')
+            print('time to split:', 1000*(time.time()-since_stack),'ms')
         print('time to get other grad:', 1000*(time.time()-since),'ms')
         return input_grad, None, other_grad
 
