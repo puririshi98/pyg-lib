@@ -22,7 +22,7 @@ class SegmentMatmul(torch.autograd.Function):
         if inputs.requires_grad:
             input_grad = torch.ops.pyg.cuda_segment_matmul(
                 out_grad, ptr, torch.transpose(other, -2, -1))
-         print('time to get input grad:', 1000*(time.time()-since),'ms')
+        print('time to get input grad:', 1000*(time.time()-since),'ms')
         other_grad = None, None
         since=time.time()
         if other.requires_grad:
