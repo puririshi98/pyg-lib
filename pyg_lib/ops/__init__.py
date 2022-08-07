@@ -11,6 +11,9 @@ class SegmentMatmul(torch.autograd.Function):
         assert ptr.is_cuda
         assert other.is_cuda
         ctx.save_for_backward(inputs, ptr, other)
+        print('forward inputs.shape',inputs.shape)
+        print('ptr=', ptr)
+        print('forward other.shape',other.shape)
         return torch.ops.pyg.cuda_segment_matmul(inputs, ptr, other)
 
     @staticmethod
@@ -27,8 +30,8 @@ class SegmentMatmul(torch.autograd.Function):
             sizes = (ptr[1:] - ptr[:-1]).tolist()
             inputs_t = inputs.transpose(-2, -1).split(sizes, dim=1)
             outs_grad = out_grad.split(sizes, dim=0)
-            print('inputs shape=',[i.shape for i in inputs_t])
-            print('others shape=',[i.shape for i in outs_grad])
+            # print('inputs shape=',[i.shape for i in inputs_t])
+            # print('others shape=',[i.shape for i in outs_grad])
             others_grad = torch.ops.pyg.cuda_grouped_matmul(
                 inputs_t, outs_grad)
             other_grad = torch.stack(others_grad, dim=0)
