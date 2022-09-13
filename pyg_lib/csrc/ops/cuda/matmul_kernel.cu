@@ -60,7 +60,11 @@ void grouped_matmul_out_kernel(const std::vector<at::Tensor>& input,
       float,                                         // Element Accumulator
       cutlass::arch::OpClassTensorOp,                // Operator Class Tag
       cutlass::arch::Sm80,                           // Architecture
-      cutlass::gemm::GemmShape<256, 128, 32>,        // Threadblock-level Tile
+#if __CUDA_ARCH__ == 800
+      cutlass::gemm::GemmShape<256, 128, 32>,        // Threadblock-level Tile for A100
+#else
+      cutlass::gemm::GemmShape<128, 64, 32>,
+#endif
       cutlass::gemm::GemmShape<64, 64, 32>,          // Warp-level Tile
       cutlass::gemm::GemmShape<16, 8, 8>,            // Warp-level Tile
       cutlass::epilogue::thread::LinearCombination<  // Epilogue
