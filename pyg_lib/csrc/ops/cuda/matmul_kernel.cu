@@ -17,7 +17,6 @@ namespace ops {
 namespace {
 
 // Returns the amount of shared memory required per threadblock in `GroupedGemmKernel`
-template <typename GroupedGemmKernel>
 int shared_memory_for_kernel() {
   return int(sizeof(typename GroupedGemmKernel::SharedStorage));
 }
