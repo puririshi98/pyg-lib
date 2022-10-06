@@ -12,6 +12,29 @@ namespace ops {
 
 namespace {
 
+// Returns the amount of shared memory required per threadblock in `GroupedGemmKernel`
+template <typename GroupedGemmKernel>
+int shared_memory_for_kernel() {
+  return int(sizeof(typename GroupedGemmKernel::SharedStorage));
+}
+
+// Returns the bytes of shared memory available per SM on the GPU, or -1 on error.
+int shared_memory_per_sm() {
+  cudaDeviceProp properties;
+  int device_idx;
+  cudaError_t result = cudaGetDevice(&device_idx);
+  if (result != cudaSuccess) {
+    return -1;
+  }
+
+  result = cudaGetDeviceProperties(&properties, device_idx);
+  if (result != cudaSuccess) {
+    return -1;
+  }
+
+  return properties.sharedMemPerMultiprocessor;
+}
+
 void grouped_matmul_out_kernel(const at::TensorList input,
                                const at::TensorList other,
                                const at::TensorList out) {
@@ -20,6 +43,15 @@ void grouped_matmul_out_kernel(const at::TensorList input,
 
   // TODO (matthias) Allow for other types than `float`.
   // TODO (matthias) Are these attributes correctly set?
+  int grouped_shared_mem = shared_memory_for_kernel<DefaultGroupedGemmKernel>();
+  int shared_mem_per_sm = shared_memory_per_sm();
+  if (grouped_shared_mem < shared_mem_per_sm) {
+    auto DynamicThreadblockShape = cutlass::gemm::GemmShape<256, 128, 32>;
+  } else {
+    auto DynamicThreadblockShape = cutlass::gemm::GemmShape<ThreadblockShape::kM / 2,
+                                                             ThreadblockShape::kN / 2,
+                                                             ThreadblockShape::kK>;
+  }
   using GemmKernel = typename cutlass::gemm::kernel::DefaultGemmGrouped<
       float,                                         // Element A
       cutlass::layout::RowMajor,                     // Layout A
@@ -34,7 +66,7 @@ void grouped_matmul_out_kernel(const at::TensorList input,
       float,                                         // Element Accumulator
       cutlass::arch::OpClassTensorOp,                // Operator Class Tag
       cutlass::arch::Sm80,                           // Architecture
-      cutlass::gemm::GemmShape<256, 128, 32>,        // Threadblock-level Tile
+      DynamicThreadblockShape,                       // Threadblock-level Tile
       cutlass::gemm::GemmShape<64, 64, 32>,          // Warp-level Tile
       cutlass::gemm::GemmShape<16, 8, 8>,            // Warp-level Tile
       cutlass::epilogue::thread::LinearCombination<  // Epilogue
