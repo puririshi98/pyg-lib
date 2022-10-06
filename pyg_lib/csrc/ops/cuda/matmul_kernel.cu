@@ -50,9 +50,7 @@ void grouped_matmul_out_kernel(const at::TensorList input,
   if (grouped_shared_mem < shared_mem_per_sm) {
     auto DynamicThreadblockShape = cutlass::gemm::GemmShape<256, 128, 32>;
   } else {
-    auto DynamicThreadblockShape = cutlass::gemm::GemmShape<ThreadblockShape::kM / 2,
-                                                             ThreadblockShape::kN / 2,
-                                                             ThreadblockShape::kK>;
+    auto DynamicThreadblockShape = cutlass::gemm::GemmShape<128, 64, 32>;
   }
   using GemmKernel = typename cutlass::gemm::kernel::DefaultGemmGrouped<
       float,                                         // Element A
