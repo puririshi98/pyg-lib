@@ -5,7 +5,7 @@
 #include "cutlass/gemm/kernel/gemm_grouped.h"
 #include "cutlass/gemm/kernel/default_gemm_grouped.h"
 #include "cutlass/gemm/device/gemm_grouped.h"
-#include "cutlass/gemm/device/gemm_universal.h""
+#include "cutlass/gemm/device/gemm_universal.h"
 #include <cutlass/util/host_tensor.h>
 #include <torch/library.h>
 
