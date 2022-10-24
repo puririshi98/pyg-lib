@@ -7,10 +7,10 @@
 
 namespace pyg {
 namespace ops {
-using torch::autograd::variable_list;
+
 // Performs matrix multiplication across list of elements.
-std::vector<at::Tensor> grouped_matmul(const variable_list input,
-                                       const variable_list other) {
+std::vector<at::Tensor> grouped_matmul(const at::TensorList input,
+                                       const at::TensorList other) {
   TORCH_CHECK(input.size() == other.size(),
               "Number of 'input' tensors must match number of 'other' tensors");
 
