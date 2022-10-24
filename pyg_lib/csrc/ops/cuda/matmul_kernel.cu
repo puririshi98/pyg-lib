@@ -9,12 +9,12 @@
 #include "cutlass/gemm/kernel/default_gemm_grouped.h"
 #include "cutlass/gemm/kernel/gemm_grouped.h"
 #include "pyg_lib/csrc/utils/convert.h"
-
+#include <torch/autograd.h>
 namespace pyg {
 namespace ops {
 
 namespace {
-
+using torch::autograd::variable_list;
 template <typename GemmKernel>
 void run_grouped_gemm(const at::TensorList input,
                       const at::TensorList other,
@@ -293,8 +293,8 @@ void grouped_matmul_out_kernel(const at::TensorList input,
   }
 }
 
-std::vector<at::Tensor> grouped_matmul_kernel(const at::TensorList input,
-                                              const at::TensorList other) {
+std::vector<at::Tensor> grouped_matmul_kernel(const variable_list input,
+                                              const variable_list other) {
   std::vector<at::Tensor> out(input.size());
   for (size_t i = 0; i < input.size(); ++i)
     out[i] = input[i].new_empty({input[i].size(0), other[i].size(-1)});
