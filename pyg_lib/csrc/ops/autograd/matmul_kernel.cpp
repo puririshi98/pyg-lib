@@ -46,7 +46,7 @@ class GroupedMatmul : public torch::autograd::Function<GroupedMatmul> {
     if (torch::autograd::any_variable_requires_grad(other)) {
       for (size_t i = 0; i < input.size(); ++i) {
         other[i] = other[i].transpose(-2, -1);
-        other_grad.push_back(torch::matmul(grad_outs[i], other[i]));
+        other_grad.push_back(torch::matmul(input[i], grad_outs[i]));
       }
     } else {
       for (size_t i = 0; i < other.size(); ++i)
@@ -57,7 +57,7 @@ class GroupedMatmul : public torch::autograd::Function<GroupedMatmul> {
     if (torch::autograd::any_variable_requires_grad(input)) {
       for (size_t i = 0; i < input.size(); ++i)
         input[i] = input[i].transpose(-2, -1);
-      input_grad = grouped_matmul(input, grad_outs);
+      input_grad = grouped_matmul(grad_outs, other);
     } else {
       for (size_t i = 0; i < input.size(); ++i)
         input_grad.push_back(Variable());

@@ -4,6 +4,41 @@ import torch
 from torch import Tensor
 
 
+class GroupedMatmul(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, inputs: List[Tensor], others: List[Tensor]):
+        ctx.save_for_backward(inputs, others)
+        outs = torch.ops.pyg.grouped_matmul(inputs, others)
+
+        # NOTE Autograd doesnt set out[i].requires_grad = True automatically
+        for src, other, out in zip(inputs, others, outs):
+            out.requires_grad = src.requires_grad or other.requires_grad
+
+        return outs
+
+    @staticmethod
+    def backward(ctx, outs_grad: List[Tensor]):
+        inputs, others = ctx.saved_tensors
+
+        inputs_grad = None
+        if all([x.requires_grad for x in inputs]):
+            for i in range(len(others)):
+                others[i] = others[i].t()
+            inputs_grad = torch.ops.pyg.grouped_matmul(outs_grad, others)
+
+        others_grad = None
+        if all([other.requires_grad for other in others]):
+            for i in range(len(inputs)):
+                inputs[i] = inputs[i].t()
+            others_grad = []
+            # Considering GPU utilization, for-loops are actually preferred
+            # here over the designated grouped matmul implementation:
+            for i in range(len(inputs_t)):
+                others_grad.append(inputs_t[i] @ outs_grad[i])
+
+        return inputs_grad, others_grad
+
+
 def grouped_matmul(inputs: List[Tensor], others: List[Tensor]) -> List[Tensor]:
     r"""Performs dense-dense matrix multiplication according to groups,
     utilizing dedicated kernels that effectively parallelize over groups.
@@ -30,12 +65,7 @@ def grouped_matmul(inputs: List[Tensor], others: List[Tensor]) -> List[Tensor]:
         List[torch.Tensor]: List of 2D output matrices of shapes
         :obj:`[N_i, M_i]`.
     """
-    outs = torch.ops.pyg.grouped_matmul(inputs, others)
-
-    for src, other, out in zip(inputs, others, outs):
-        out.requires_grad = src.requires_grad or other.requires_grad
-
-    return outs
+    return GroupedMatmul.apply(inputs, others)
 
 
 def segment_matmul(inputs: Tensor, ptr: Tensor, other: Tensor) -> Tensor:
