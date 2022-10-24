@@ -35,7 +35,8 @@ class GroupedMatmul(torch.autograd.Function):
             # here over the designated grouped matmul implementation:
             for i in range(len(inputs_t)):
                 others_grad.append(inputs_t[i] @ outs_grad[i])
-
+        print("inputs_grad, others_grad:")
+        print(inputs_grad, others_grad)
         return inputs_grad, others_grad
 
 
