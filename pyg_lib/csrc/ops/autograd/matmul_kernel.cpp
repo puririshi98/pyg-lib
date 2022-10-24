@@ -111,6 +111,13 @@ class SegmentMatmul : public torch::autograd::Function<SegmentMatmul> {
   }
 };
 
+
+std::vector<at::Tensor> grouped_matmul(const variable_list input,
+                                       const variable_list other) {
+  return GroupedMatmul::apply(input, other);
+}
+
+
 at::Tensor segment_matmul_autograd(const at::Tensor& input,
                                    const at::Tensor& ptr,
                                    const at::Tensor& other) {
@@ -122,6 +129,8 @@ at::Tensor segment_matmul_autograd(const at::Tensor& input,
 TORCH_LIBRARY_IMPL(pyg, Autograd, m) {
   m.impl(TORCH_SELECTIVE_NAME("pyg::segment_matmul"),
          TORCH_FN(segment_matmul_autograd));
+  m.impl(TORCH_SELECTIVE_NAME("pyg::grouped_matmul"),
+         TORCH_FN(grouped_matmul_autograd));
 }
 
 }  // namespace ops
