@@ -7,7 +7,7 @@
 
 namespace pyg {
 namespace ops {
-
+using torch::autograd::variable_list;
 // Performs matrix multiplication across list of elements.
 std::vector<at::Tensor> grouped_matmul(const variable_list input,
                                        const variable_list other) {
