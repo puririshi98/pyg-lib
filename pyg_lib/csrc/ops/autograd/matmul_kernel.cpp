@@ -129,7 +129,7 @@ at::Tensor segment_matmul_autograd(const at::Tensor& input,
 TORCH_LIBRARY_IMPL(pyg, Autograd, m) {
   m.impl(TORCH_SELECTIVE_NAME("pyg::segment_matmul"),
          TORCH_FN(segment_matmul_autograd));
-  m.impl(TORCH_SELECTIVE_NAME("pyg::grouped_matmul_kernel"),
+  m.impl(TORCH_SELECTIVE_NAME("pyg::grouped_matmul"),
          TORCH_FN(grouped_matmul_autograd));
 }
 

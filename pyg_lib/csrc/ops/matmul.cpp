@@ -9,8 +9,8 @@ namespace pyg {
 namespace ops {
 
 // Performs matrix multiplication across list of elements.
-std::vector<at::Tensor> grouped_matmul(const at::TensorList input,
-                                       const at::TensorList other) {
+std::vector<at::Tensor> grouped_matmul(const std::vector<at::Tensor> input,
+                                       const std::vector<at::Tensor> other) {
   TORCH_CHECK(input.size() == other.size(),
               "Number of 'input' tensors must match number of 'other' tensors");
 
@@ -32,7 +32,7 @@ std::vector<at::Tensor> grouped_matmul(const at::TensorList input,
   }
 
   static auto op = c10::Dispatcher::singleton()
-                       .findSchemaOrThrow("pyg::grouped_matmul_kernel", "")
+                       .findSchemaOrThrow("pyg::grouped_matmul", "")
                        .typed<decltype(grouped_matmul)>();
   return op.call(input, other);
 }
