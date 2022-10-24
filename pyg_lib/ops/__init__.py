@@ -25,6 +25,8 @@ class GroupedMatmul(torch.autograd.Function):
             for i in range(len(others)):
                 others[i] = others[i].t()
             inputs_grad = torch.ops.pyg.grouped_matmul(outs_grad, others)
+            for i in range(len(inputs)):
+                inputs[i].grad = inputs_grad[i]
 
         others_grad = None
         if all([other.requires_grad for other in others]):
@@ -34,10 +36,7 @@ class GroupedMatmul(torch.autograd.Function):
             # Considering GPU utilization, for-loops are actually preferred
             # here over the designated grouped matmul implementation:
             for i in range(len(inputs_t)):
-                others_grad.append(inputs_t[i] @ outs_grad[i])
-        print("inputs_grad, others_grad:")
-        print(inputs_grad, others_grad)
-        return inputs_grad, others_grad
+                others[i].grad = inputs_t[i] @ outs_grad[i]
 
 
 def grouped_matmul(inputs: List[Tensor], others: List[Tensor]) -> List[Tensor]:
