@@ -70,7 +70,7 @@ def grouped_matmul(inputs: List[Tensor], others: List[Tensor]) -> List[Tensor]:
     # NOTE Autograd doesnt set out[i].requires_grad = True automatically
     for src, other, out in zip(inputs, others, outs):
         out.requires_grad = src.requires_grad or other.requires_grad
-    return out
+    return outs
 
 
 def segment_matmul(inputs: Tensor, ptr: Tensor, other: Tensor) -> Tensor:
