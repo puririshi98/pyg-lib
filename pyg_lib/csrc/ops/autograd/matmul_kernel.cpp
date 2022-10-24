@@ -126,7 +126,14 @@ at::Tensor segment_matmul_autograd(const at::Tensor& input,
 
 }  // namespace
 
-TORCH_LIBRARY_IMPL(pyg, Autograd, m) {
+TORCH_LIBRARY_IMPL(pyg, AutogradCUDA, m) {
+  m.impl(TORCH_SELECTIVE_NAME("pyg::segment_matmul"),
+         TORCH_FN(segment_matmul_autograd));
+  m.impl(TORCH_SELECTIVE_NAME("pyg::grouped_matmul"),
+         TORCH_FN(grouped_matmul_autograd));
+}
+
+TORCH_LIBRARY_IMPL(pyg, AutogradCPU, m) {
   m.impl(TORCH_SELECTIVE_NAME("pyg::segment_matmul"),
          TORCH_FN(segment_matmul_autograd));
   m.impl(TORCH_SELECTIVE_NAME("pyg::grouped_matmul"),
