@@ -7,6 +7,7 @@ from torch import Tensor
 class GroupedMatmul(torch.autograd.Function):
     @staticmethod
     def forward(ctx, inputs: List[Tensor], others: List[Tensor]):
+        print("inside forward")
         ctx.save_for_backward(inputs, others)
         outs = torch.ops.pyg.grouped_matmul(inputs, others)
 
@@ -18,6 +19,7 @@ class GroupedMatmul(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, outs_grad: List[Tensor]):
+        print('inside backward')
         inputs, others = ctx.saved_tensors
 
         inputs_grad = None
