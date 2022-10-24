@@ -66,7 +66,7 @@ def grouped_matmul(inputs: List[Tensor], others: List[Tensor]) -> List[Tensor]:
         :obj:`[N_i, M_i]`.
     """
 
-    out = GroupedMatmul.apply(inputs, others)
+    outs = GroupedMatmul.apply(inputs, others)
     # NOTE Autograd doesnt set out[i].requires_grad = True automatically
     for src, other, out in zip(inputs, others, outs):
         out.requires_grad = src.requires_grad or other.requires_grad
