@@ -32,7 +32,7 @@ std::vector<at::Tensor> grouped_matmul(const at::TensorList input,
   }
 
   static auto op = c10::Dispatcher::singleton()
-                       .findSchemaOrThrow("pyg::grouped_matmul", "")
+                       .findSchemaOrThrow("pyg::grouped_matmul_kernel", "")
                        .typed<decltype(grouped_matmul)>();
   return op.call(input, other);
 }
