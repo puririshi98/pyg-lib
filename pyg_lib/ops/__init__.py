@@ -30,6 +30,8 @@ class GroupedMatmul(torch.autograd.Function):
 
         others_grad = None
         if all([other.requires_grad for other in others]):
+            print("Calculating other")
+            quit()
             for i in range(len(inputs)):
                 inputs[i] = inputs[i].t()
             others_grad = []
