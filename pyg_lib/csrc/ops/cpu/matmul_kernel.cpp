@@ -2,7 +2,7 @@
 #include <torch/library.h>
 
 #include "pyg_lib/csrc/utils/convert.h"
-
+#include <torch/autograd.h>
 namespace pyg {
 namespace ops {
 
