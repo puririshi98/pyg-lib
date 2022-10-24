@@ -293,8 +293,8 @@ void grouped_matmul_out_kernel(const at::TensorList input,
   }
 }
 
-std::vector<at::Tensor> grouped_matmul_kernel(const at::TensorList input,
-                                              const at::TensorList other) {
+std::vector<at::Tensor> grouped_matmul_kernel(const std::vector<at::Tensor> input,
+                                              const std::vector<at::Tensor> other) {
   std::vector<at::Tensor> out(input.size());
   for (size_t i = 0; i < input.size(); ++i)
     out[i] = input[i].new_empty({input[i].size(0), other[i].size(-1)});
