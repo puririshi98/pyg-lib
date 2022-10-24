@@ -11,10 +11,6 @@ class GroupedMatmul(torch.autograd.Function):
         ctx.save_for_backward(inputs, others)
         outs = torch.ops.pyg.grouped_matmul(inputs, others)
 
-        # NOTE Autograd doesnt set out[i].requires_grad = True automatically
-        for src, other, out in zip(inputs, others, outs):
-            out.requires_grad = src.requires_grad or other.requires_grad
-
         return outs
 
     @staticmethod
@@ -69,7 +65,12 @@ def grouped_matmul(inputs: List[Tensor], others: List[Tensor]) -> List[Tensor]:
         List[torch.Tensor]: List of 2D output matrices of shapes
         :obj:`[N_i, M_i]`.
     """
-    return GroupedMatmul.apply(inputs, others)
+
+    out = GroupedMatmul.apply(inputs, others)
+    # NOTE Autograd doesnt set out[i].requires_grad = True automatically
+    for src, other, out in zip(inputs, others, outs):
+        out.requires_grad = src.requires_grad or other.requires_grad
+    return out
 
 
 def segment_matmul(inputs: Tensor, ptr: Tensor, other: Tensor) -> Tensor:
