@@ -6,12 +6,9 @@ from torch import Tensor
 
 class GroupedMatmul(torch.autograd.Function):
     @staticmethod
-    def forward(ctx, *args):
-        ctx.save_for_backward(*args)
-        input_len = int(len(list(args)) / 2)
-        inputs = list(args)[:input_len]
-        others = list(args)[input_len:]
-        
+    def forward(ctx, inputs: List[Tensor], others: List[Tensor]):
+        print("inside forward")
+        ctx.save_for_backward(inputs, others)
         outs = torch.ops.pyg.grouped_matmul(inputs, others)
 
         return outs
@@ -19,10 +16,7 @@ class GroupedMatmul(torch.autograd.Function):
     @staticmethod
     def backward(ctx, outs_grad: List[Tensor]):
         print('inside backward')
-        args = ctx.saved_tensors
-        input_len = len(outs_grad)
-        inputs = list(args)[:input_len]
-        others = list(args)[input_len:]
+        inputs, others = ctx.saved_tensors
 
         inputs_grad = None
         if all([x.requires_grad for x in inputs]):
@@ -72,7 +66,7 @@ def grouped_matmul(inputs: List[Tensor], others: List[Tensor]) -> List[Tensor]:
         :obj:`[N_i, M_i]`.
     """
 
-    outs = GroupedMatmul.apply(*(inputs + others))
+    outs = GroupedMatmul.apply(inputs, others)
     # NOTE Autograd doesnt set out[i].requires_grad = True automatically
     for src, other, out in zip(inputs, others, outs):
         out.requires_grad = src.requires_grad or other.requires_grad
