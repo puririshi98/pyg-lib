@@ -6,8 +6,10 @@ from torch import Tensor
 
 class GroupedMatmul(torch.autograd.Function):
     @staticmethod
-    def forward(ctx, inputs: List[Tensor], others: List[Tensor]):
-        print("inside forward")
+    def forward(ctx, *args):
+        input_len = int(len(list(args)) / 2)
+        inputs = list(args)[:input_len]
+        others = list(args)[input_len:]
         ctx.save_for_backward(inputs, others)
         outs = torch.ops.pyg.grouped_matmul(inputs, others)
 
