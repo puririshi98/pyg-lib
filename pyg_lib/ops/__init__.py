@@ -17,7 +17,7 @@ class GroupedMatmul(torch.autograd.Function):
         return outs
 
     @staticmethod
-    def backward(ctx, *outs_grad):
+    def backward(ctx, outs_grad: List[Tensor]):
         print('inside backward')
         args = ctx.saved_tensors
         input_len = len(outs_grad)
